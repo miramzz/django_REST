@@ -2,26 +2,30 @@ from django.forms import widgets
 from rest_framework import serializers
 from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 
-class SnippetSerializer(serializers.Serializer):
-    pk = serializers.Field()
-    title = serializers.CharField(required=False, max_length=100)
-    code = serializers.CharField(widget=widgets.Textarea, max_length=100000)
-    linenos = serializers.BooleanField(required=False)
-    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES,
-                                                      default='python')
-    style = serializers.ChoiceField(choices=STYLE_CHOICES, default='friendly')
 
+class SnippetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Snippet
         fields = ('id', 'title', 'code', 'linenos', 'language', 'style')
 
+    pk = serializers.Field()  # Note: `Field` is an untyped read-only field.
+    title = serializers.CharField(required=False,
+                                  max_length=100)
+    code = serializers.CharField(widget=widgets.Textarea,
+                                 max_length=100000)
+    linenos = serializers.BooleanField(required=False)
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES,
+                                       default='python')
+    style = serializers.ChoiceField(choices=STYLE_CHOICES,
+                                    default='friendly')
 
     def restore_object(self, attrs, instance=None):
         """
-        Create or update a new snippet instance, given a dictionary of
-        deserialized field values.
-        Note that if we dont define this method, deserializing data will
-        simply return a dictionary of items
+        Create or update a new snippet instance, given a dictionary
+        of deserialized field values.
+
+        Note that if we don't define this method, then deserializing
+        data will simply return a dictionary of items.
         """
         if instance:
             # Update existing instance
@@ -32,5 +36,5 @@ class SnippetSerializer(serializers.Serializer):
             instance.style = attrs.get('style', instance.style)
             return instance
 
-        #create a new instance
+        # Create new instance
         return Snippet(**attrs)
