@@ -3,6 +3,7 @@ from django.conf.urls import include
 
 urlpatterns = patterns('',
     url(r'^', include('snippets.urls')),
+    url(r'^$', 'api_root'),
 )
 
 urlpatterns += patterns('',
