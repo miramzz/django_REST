@@ -15,9 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
 class SnippetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Snippet
-        fields = ('id', 'title', 'code', 'linenos', 'language', 'style')
+        fields = ('id', 'owner', 'title', 'code', 'linenos', 'language', 'style')
 
     pk = serializers.Field()  # Note: `Field` is an untyped read-only field.
+    owner = serializers.Field(source='owner.username')
     title = serializers.CharField(required=False,
                                   max_length=100)
     code = serializers.CharField(widget=widgets.Textarea,
