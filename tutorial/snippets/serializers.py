@@ -4,30 +4,28 @@ from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 from django.contrib.auth.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
-    snippets = serializers.PrimaryKeyRelatedField(many=True)
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    snippets = serializers.HyperlinkedRelatedField(many=True, view_name='snippet-detail')
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'snippets')
+        fields = ('url', 'username', 'snippets')
 
 
-class SnippetSerializer(serializers.ModelSerializer):
+class SnippetSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.Field(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+    title = serializers.CharField(required=False, max_length=100)
+    code = serializers.CharField(widget=widgets.Textarea, max_length=100000)
+    linenos = serializers.BooleanField(required=False)
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
+    style = serializers.ChoiceField(choices=STYLE_CHOICES, default='friendly')
+
     class Meta:
         model = Snippet
-        fields = ('id', 'owner', 'title', 'code', 'linenos', 'language', 'style')
+        fields = ('url', 'highlight', 'owner',
+                  'title', 'code', 'linenos', 'language', 'style')
 
-    pk = serializers.Field()  # Note: `Field` is an untyped read-only field.
-    owner = serializers.Field(source='owner.username')
-    title = serializers.CharField(required=False,
-                                  max_length=100)
-    code = serializers.CharField(widget=widgets.Textarea,
-                                 max_length=100000)
-    linenos = serializers.BooleanField(required=False)
-    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES,
-                                       default='python')
-    style = serializers.ChoiceField(choices=STYLE_CHOICES,
-                                    default='friendly')
 
     def restore_object(self, attrs, instance=None):
         """
